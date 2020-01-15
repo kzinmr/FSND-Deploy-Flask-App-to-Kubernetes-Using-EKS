@@ -33,7 +33,7 @@ spec:
         - name: simple-jwt-api
           image: CONTAINER_IMAGE
           securityContext:
-            privileged: false
+            privileged: true
             readOnlyRootFilesystem: false
             allowPrivilegeEscalation: false
           ports:
