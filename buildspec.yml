@@ -1,6 +1,9 @@
 ---
 version: 0.2
 
+env:
+  parameter-store:
+    JWT_SECRET: JWT_SECRET
 
 phases:
   install:
@@ -14,14 +17,17 @@ phases:
       - python3 --version
       - pip --version
       - pip3 --version
+      - pip3 install --upgrade pip
+      - pip3 --version
       - pip3 install -r requirements.txt
+      - python3 -c 'from typing import Optional'
   pre_build:
-      commands:
-        - TAG="$REPOSITORY_NAME.$REPOSITORY_BRANCH.$ENVIRONMENT_NAME.$(date +%Y-%m-%d.%H.%M.%S).$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
-        - sed -i 's@CONTAINER_IMAGE@'"$REPOSITORY_URI:$TAG"'@' simple_jwt_api.yml
-        - $(aws ecr get-login --no-include-email)
-        - export KUBECONFIG=$HOME/.kube/config
-        - python3 test_main.py
+    commands:
+      - TAG="$REPOSITORY_NAME.$REPOSITORY_BRANCH.$ENVIRONMENT_NAME.$(date +%Y-%m-%d.%H.%M.%S).$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
+      - sed -i 's@CONTAINER_IMAGE@'"$REPOSITORY_URI:$TAG"'@' simple_jwt_api.yml
+      - $(aws ecr get-login --no-include-email)
+      - export KUBECONFIG=$HOME/.kube/config
+      - python3 test_main.py
   build:
     commands:
       - docker build --tag $REPOSITORY_URI:$TAG .
@@ -41,7 +47,3 @@ phases:
       - ls
 artifacts:
   files: build.json
-
-env:
-  parameter-store:         
-    JWT_SECRET: JWT_SECRET
